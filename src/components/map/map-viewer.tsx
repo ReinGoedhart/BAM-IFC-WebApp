@@ -2,12 +2,12 @@ import { FC, useEffect, useRef, useState } from "react";
 import { useAppContext } from "../../middleware/context-provider";
 import { Navigate } from "react-router-dom";
 import { Button } from "@mui/material";
+import "./map-viewer.css";
 
 export const MapViewer: FC = () => {
+  const [state, dispatch] = useAppContext();
   const containerRef = useRef(null);
   const [isCreating, setIsCreating] = useState(false);
-
-  const [state, dispatch] = useAppContext();
   const { user } = state;
 
   const onToggleCreate = () => {
@@ -18,17 +18,15 @@ export const MapViewer: FC = () => {
     if (isCreating) {
       dispatch({ type: "ADD_BUILDING", payload: user });
       setIsCreating(false);
-      //..
-
-      setIsCreating(false);
     }
   };
 
   useEffect(() => {
     const container = containerRef.current;
-    if (container && state.user) {
+    if (container && user) {
       dispatch({ type: "START_MAP", payload: { container, user } });
     }
+
     return () => {
       dispatch({ type: "REMOVE_MAP" });
     };
@@ -38,17 +36,31 @@ export const MapViewer: FC = () => {
     dispatch({ type: "LOGOUT" });
   };
 
-  if (!state.user) {
+  if (!user) {
     return <Navigate to={"/login"} />;
   }
 
   return (
     <>
-      <div className="full-screen" ref={containerRef} />
-      <Button variant="contained" color="primary" onClick={onLogout}>
-        Logout
-      </Button>
-      <h1>Hello map viewer!</h1>
+      <div
+        onContextMenu={onCreate}
+        className="full-screen"
+        ref={containerRef}
+      />
+      {isCreating && (
+        <div className="overlay">
+          <p>Right click to create a new building or</p>
+          <Button onClick={onToggleCreate}>cancel</Button>
+        </div>
+      )}
+      <div className="gis-button-container ">
+        <Button variant="contained" color="primary" onClick={onToggleCreate}>
+          Create Building
+        </Button>
+        <Button variant="contained" color="primary" onClick={onLogout}>
+          Logout
+        </Button>
+      </div>
     </>
   );
 };

@@ -8,9 +8,13 @@ export interface GisParameters {
   buildings?: number;
 }
 
-export interface GisBuilding {
-  id: string;
+export interface Building {
+  uid: string;
   lat: number;
   lng: number;
-  htmlElement: HTMLElement;
+}
+
+export interface LngLat {
+  lng: number;
+  lat: number;
 }

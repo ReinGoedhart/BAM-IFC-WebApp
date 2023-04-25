@@ -10,10 +10,10 @@ function App() {
     <ContextProvider>
       <Router>
         <Routes>
-          <Route path="/" element={<LoginForm />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/map" element={<MapViewer />} />
           <Route path="/building" element={<BuildingViewer />} />
+          <Route path="/map" element={<MapViewer />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/" element={<LoginForm />} />
         </Routes>
       </Router>
     </ContextProvider>

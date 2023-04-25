@@ -3,7 +3,6 @@ import {
   PropsWithChildren,
   useReducer,
   createContext,
-  Fragment,
   useContext,
 } from "react";
 import { reducer } from "./state-handler";

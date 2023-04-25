@@ -10,14 +10,10 @@ export const LoginForm: FC = () => {
   const onLogin = () => {
     dispatch({ type: "LOGIN" });
   };
-  const onLogOut = () => {
-    dispatch({ type: "LOGOUT" });
-  };
 
-if (state.user) {
-  return <Navigate to={"/map"}/>
-}
-
+  if (state.user) {
+    return <Navigate to={"/map"} />;
+  }
 
   return (
     <h1>
