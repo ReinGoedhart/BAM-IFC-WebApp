@@ -1,22 +1,31 @@
+import { updateDoc } from "firebase/firestore";
+import { Building } from "../types";
 import { mapHandler } from "../core/map/map-handler";
-import { userAuth } from "../core/user/user-auth";
+import { databaseHandler } from "../core/db/db-handler";
 import { Action } from "./actions";
+import { Events } from "./event-handler";
 
-export const executeCore = (action: Action) => {
+export const executeCore = (action: Action, events: Events) => {
   if (action.type === "LOGIN") {
-    userAuth.Login();
+    databaseHandler.Login();
   }
   if (action.type === "LOGOUT") {
-    userAuth.Logout();
+    databaseHandler.Logout();
   }
   if (action.type === "START_MAP") {
-    const { user, container } = action.payload;
-    mapHandler.start(container);
+    const { container, user } = action.payload;
+    mapHandler.start(container, user, events);
   }
   if (action.type === "REMOVE_MAP") {
     mapHandler.remove();
   }
   if (action.type === "ADD_BUILDING") {
     mapHandler.addBuilding(action.payload);
+  }
+  if (action.type === "DELETE_BUILDING") {
+    databaseHandler.deleteBuilding(action.payload, events);
+  }
+  if (action.type === "UPDATE_BUILDING") {
+    databaseHandler.updateBuilding(action.payload);
   }
 };

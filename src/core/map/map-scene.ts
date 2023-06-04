@@ -1,10 +1,12 @@
+import { MapDatabase } from "./map-database";
 import * as OBC from "openbim-components";
 import { MAPBOX_KEY } from "../../config";
-import { Building, GisParameters, LngLat } from "./types";
+import { Building, GisParameters, LngLat } from "../../types";
 import * as MAPBOX from "mapbox-gl";
 import * as THREE from "three";
 import { User } from "firebase/auth";
 import { CSS2DObject } from "three/examples/jsm/renderers/CSS2DRenderer";
+import { Events } from "../../middleware/event-handler";
 
 export class MapScene {
   private components = new OBC.Components();
@@ -13,12 +15,15 @@ export class MapScene {
   private center: LngLat = { lat: 0, lng: 0 };
   private clickedCoordinates: LngLat = { lat: 0, lng: 0 };
   private labels: { [id: string]: CSS2DObject } = {};
+  private database = new MapDatabase();
+  private events: Events;
 
-  constructor(container: HTMLDivElement) {
+  constructor(container: HTMLDivElement, events: Events) {
+    this.events = events;
     const configuration = this.getConfig(container);
     this.map = this.createMap(configuration);
     this.initializeComponents(configuration);
-    this.setupScene();
+    this.CreateScene();
   }
 
   dispose() {
@@ -33,10 +38,19 @@ export class MapScene {
     this.labels = {};
   }
 
-  addBuilding(user: User) {
+  async getAllBuildings(user: User) {
+    const buildings = await this.database.getBuildings(user);
+    if (this.components) {
+      this.addToScene(buildings);
+    }
+  }
+
+  async addBuilding(user: User) {
     const { lat, lng } = this.clickedCoordinates;
-    const userId = user.uid;
-    const building = { userId, lat, lng, uid: "" };
+    const userID = user.uid;
+    const building = { userID, lat, lng, uid: "", name: "" };
+    building.uid = await this.database.add(building);
+
     this.addToScene([building]);
   }
 
@@ -44,7 +58,7 @@ export class MapScene {
     for (const building of buildings) {
       const { uid, lng, lat } = building;
 
-      const htmlElement = this.createHtmlElement();
+      const htmlElement = this.createHtmlElement(building);
 
       const label = new CSS2DObject(htmlElement);
 
@@ -52,7 +66,6 @@ export class MapScene {
         { ...this.center },
         0
       );
-
       const units = center.meterInMercatorCoordinateUnits();
 
       const model = MAPBOX.MercatorCoordinate.fromLngLat({ lng, lat }, 0);
@@ -68,14 +81,19 @@ export class MapScene {
     }
   }
 
-  private createHtmlElement() {
+  private createHtmlElement(building: Building) {
     const div = document.createElement("div");
     div.textContent = "🏢";
+
+    div.onclick = () => {
+      this.events.trigger({ type: "OPEN_BUILDING", payload: building });
+    };
+
     div.classList.add("thumbnail");
     return div;
   }
 
-  private setupScene() {
+  private CreateScene() {
     const scene = this.components.scene.get();
     scene.background = null;
     const dirlight1 = new THREE.DirectionalLight(0xffffff);
