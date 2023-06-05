@@ -1,5 +1,3 @@
-import { updateDoc } from "firebase/firestore";
-import { Building } from "../types";
 import { mapHandler } from "../core/map/map-handler";
 import { databaseHandler } from "../core/db/db-handler";
 import { Action } from "./actions";
@@ -27,5 +25,13 @@ export const executeCore = (action: Action, events: Events) => {
   }
   if (action.type === "UPDATE_BUILDING") {
     databaseHandler.updateBuilding(action.payload);
+  }
+  if (action.type === "UPLOAD_MODEL") {
+    const { model, file, building } = action.payload;
+    databaseHandler.uploadModel(model, file, building, events);
+  }
+  if (action.type === "DELETE_MODEL") {
+    const { model, building } = action.payload;
+    databaseHandler.deleteModel(model, building, events);
   }
 };

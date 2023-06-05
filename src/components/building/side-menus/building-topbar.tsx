@@ -4,6 +4,7 @@ import * as React from "react";
 import Toolbar from "@mui/material/Toolbar";
 import IconButton from "@mui/material/IconButton";
 
+import MenuIcon from "@mui/icons-material/Menu";
 import { Typography } from "@mui/material";
 import { getAppBar } from "./mui-utils";
 
@@ -28,7 +29,9 @@ export const BuildingTopbar: FC<{
             marginRight: 5,
             ...(open && { display: "none" }),
           }}
-        ></IconButton>
+        >
+          <MenuIcon />
+        </IconButton>
         <Typography variant="h6" noWrap component="div">
           Building viewer
         </Typography>
