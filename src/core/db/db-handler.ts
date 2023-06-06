@@ -10,6 +10,7 @@ import { Building, Model } from "../../types";
 import { deleteDoc, doc, getFirestore, updateDoc } from "firebase/firestore";
 import { getApp } from "firebase/app";
 import { deleteObject, getStorage, ref, uploadBytes } from "firebase/storage";
+import { buildingHandler } from "../building/building-handler";
 
 export const databaseHandler = {
   Login: () => {
@@ -25,6 +26,14 @@ export const databaseHandler = {
   deleteBuilding: async (building: Building, events: Events) => {
     const dbInstance = getFirestore(getApp());
     await deleteDoc(doc(dbInstance, "buildings", building.uid));
+    const storageInstance = getStorage(getApp());
+    const ids: string[] = [];
+    for (const model of building.models) {
+      const fileRef = ref(storageInstance, model.id);
+      await deleteObject(fileRef);
+      ids.push(model.id);
+    }
+    await buildingHandler.deleteModels(ids);
     events.trigger({ type: "CLOSE_BUILDING" });
   },
 
@@ -45,6 +54,7 @@ export const databaseHandler = {
     const storageInstance = getStorage(appInstance);
     const fileRef = ref(storageInstance, model.id);
     await uploadBytes(fileRef, file);
+    await buildingHandler.refreshModels(building);
     events.trigger({ type: "UPDATE_BUILDING", payload: building });
   },
 
@@ -53,6 +63,8 @@ export const databaseHandler = {
     const storageInstance = getStorage(appInstance);
     const fileRef = ref(storageInstance, model.id);
     await deleteObject(fileRef);
+    await buildingHandler.deleteModels([model.id]);
+    await buildingHandler.refreshModels(building);
     events.trigger({ type: "UPDATE_BUILDING", payload: building });
   },
 };
